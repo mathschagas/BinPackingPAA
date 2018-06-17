@@ -31,4 +31,8 @@ public class Objeto {
 		this.peso = peso;
 	}
 
+	public Objeto getCopia() {
+		Objeto copia = new Objeto(this.getId(), this.getPeso());
+		return copia;
+	}
 }
