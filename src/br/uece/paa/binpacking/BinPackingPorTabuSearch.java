@@ -31,6 +31,9 @@ public class BinPackingPorTabuSearch {
 	private boolean perturbacaoRemoveuBinDeOrigem;
 	private Integer idBinRemovidoNaPertubacao;
 	private Boolean coubeNoDestino;
+	private Long timerMarcacaoInicio;
+	private Long timerMarcacaoTermino;
+	private long tempoMaximo;
 
 	public BinPackingPorTabuSearch() {
 		N = 0;
@@ -109,6 +112,7 @@ public class BinPackingPorTabuSearch {
 		T = 7; // T = 7 a 10 já resulta em soluções satisfatórias.
 		NV = N / 2; // Sugestão do livro, de acorod com o estudo de HERTZ, WERRA (1987)
 		filaTabu = new FilaTabu(T);
+		tempoMaximo = (long) 600000; // Tempo maximo para execução de instâncias de longa duração.
 	}
 
 	private void buscaTabu() {
@@ -118,6 +122,7 @@ public class BinPackingPorTabuSearch {
 		Integer i = 0; // indice das iterações
 		Integer M = 0; // indice da iteração da melhor solução
 		while ((i - M) < NMAX) {
+			timerMarcacaoInicio = System.currentTimeMillis();
 			Boolean primeiroVizinhoNaoTabuRegistrado = false;
 			fazerPerturbacao(solucaoAtual);
 			SolucaoBPTS melhorVizinho = solucaoAtual.getCopiaDaSolucao();
@@ -139,14 +144,19 @@ public class BinPackingPorTabuSearch {
 			}
 			solucaoAtual = melhorVizinho.getCopiaDaSolucao();
 			filaTabu.adicionar(solucaoAtual);
+			timerMarcacaoTermino = System.currentTimeMillis();
 			if (melhorSolucao.getQtdBins() > melhorVizinho.getQtdBins()) {
-				System.out.println("Achou uma solução melhor! i = " + i + ". Num. de Bins: " + melhorVizinho.getQtdBins());
+				System.out.println("Achou uma solução melhor! i = " + i + ". Num. de Bins: " + melhorVizinho.getQtdBins() +
+						". (Tempo = " + (timerMarcacaoTermino-timerMarcacaoInicio) + ")");
 				melhorSolucao = melhorVizinho.getCopiaDaSolucao();
 				M = i;
 			} else {
-				System.out.println("i = " + i);
+				System.out.println("i = " + i + ". (Tempo = " + (timerMarcacaoTermino-timerMarcacaoInicio) + ")");
 			}
 			i++;
+			if (tempoDeTermino-tempoDeInicio > tempoMaximo) {
+				break;
+			}
 		}
 	}
 

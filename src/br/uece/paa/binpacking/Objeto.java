@@ -41,4 +41,5 @@ public class Objeto {
 		str += getId() + " (" + getPeso() + ")";
 		return str;
 	}
+
 }

@@ -61,7 +61,6 @@ public class Bin {
 		return this.listaDeObjetos.get(indice);
 	}
 	
-	
 	public Integer getQtdObjetos() {
 		return this.listaDeObjetos.size();
 	}

@@ -45,10 +45,6 @@ public class SolucaoBPTS {
 		return str;
 	}
 
-//	public void fazerPerturbacao() {
-//
-//	}
-
 	public Bin getBin(Integer indiceBin) {
 		return listaBins.get(indiceBin);
 	}
