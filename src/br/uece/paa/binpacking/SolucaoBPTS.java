@@ -38,7 +38,7 @@ public class SolucaoBPTS {
 		str += "----------------------------------------------\n";
 		for (int i = 0; i < listaBins.size(); i++) {
 			Bin binAtual = listaBins.get(i);
-			str += "BIN ("+ "id = " + binAtual.getId() + ") nº " + (i+1) + ": ";
+			str += "BIN ("+ "id = " + binAtual.getId() + ") nº " + (i) + ": ";
 			str += binAtual.stringObjetosInseridos();
 			str += "\n";
 		}
@@ -61,7 +61,7 @@ public class SolucaoBPTS {
 		return copia;
 	}
 
-	private void adicionarBin(Bin bin) {
+	public void adicionarBin(Bin bin) {
 		listaBins.add(bin);
 	}
 
@@ -71,6 +71,10 @@ public class SolucaoBPTS {
 
 	public void removeBin(Bin binVazio) {
 		listaBins.remove(binVazio);
+	}
+	
+	public void setBinNaPosicao(Bin bin, Integer posicao) {
+		listaBins.set(posicao, bin);
 	}
 
 }

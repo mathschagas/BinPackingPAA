@@ -10,13 +10,12 @@ public class Bin {
 	private ArrayList<Objeto> listaDeObjetos;
 	
 	public Bin(Integer C) {
-		setId(++_id);
+		setId(_id++);
 		setCapacidade(C);
 		listaDeObjetos = new ArrayList<Objeto>();
 	}
 	
-	// Construtor exclusivo para criação de cópias
-	private Bin(Integer id, Integer C) {
+	public Bin(Integer id, Integer C) {
 		setId(id);
 		setCapacidade(C);
 		listaDeObjetos = new ArrayList<Objeto>();
@@ -94,6 +93,13 @@ public class Bin {
 		Objeto objetoASerRemovido = listaDeObjetos.get(indiceObjetoDaPerturbacao);
 		listaDeObjetos.remove(objetoASerRemovido);
 		return objetoASerRemovido;
+	}
+	
+	public void setObjetoNaPosicao(Objeto objeto, Integer posicao) {
+		if (posicao == listaDeObjetos.size()) {
+			listaDeObjetos.add(objeto);
+		}
+		listaDeObjetos.set(posicao, objeto);
 	}
 
 }

@@ -35,4 +35,10 @@ public class Objeto {
 		Objeto copia = new Objeto(this.getId(), this.getPeso());
 		return copia;
 	}
+	
+	public String toString() {
+		String str = "";
+		str += getId() + " (" + getPeso() + ")";
+		return str;
+	}
 }

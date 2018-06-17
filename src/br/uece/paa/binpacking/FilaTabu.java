@@ -15,7 +15,7 @@ public class FilaTabu {
 
 	public boolean contem(SolucaoBPTS vizinhoAtual) {
 		for (SolucaoBPTS solucaoAtual : fila) {
-			if (solucaoAtual.toString() == vizinhoAtual.toString()) {
+			if (solucaoAtual.toString().equals(vizinhoAtual.toString())) {
 				return true;
 			}
 		}

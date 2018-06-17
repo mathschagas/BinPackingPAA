@@ -24,7 +24,13 @@ public class BinPackingPorTabuSearch {
 	private Long tempoDeExecucao;
 	private Long tempoDeInicio;
 	private Long tempoDeTermino;
-
+	private int indiceBinOrigem;
+	private int indiceObjetoASerTransferido;
+	private Objeto objetoPerturbacao;
+	private int indiceBinDestino;
+	private boolean perturbacaoRemoveuBinDeOrigem;
+	private Integer idBinRemovidoNaPertubacao;
+	private Boolean coubeNoDestino;
 
 	public BinPackingPorTabuSearch() {
 		N = 0;
@@ -93,8 +99,8 @@ public class BinPackingPorTabuSearch {
 		solucaoInicial = new SolucaoBPTS(nomeInstancia, C);
 		for (int i = 0; i < pesos.size(); i++) {
 			Objeto objetoAtual = new Objeto(i + 1, pesos.get(i));
-//			solucaoInicial.adicionarObjetoPorFirstFit(objetoAtual);
-			solucaoInicial.adicionarObjetoEmNovoBin(objetoAtual);
+			solucaoInicial.adicionarObjetoPorFirstFit(objetoAtual);
+			// solucaoInicial.adicionarObjetoEmNovoBin(objetoAtual);
 		}
 	}
 
@@ -112,21 +118,30 @@ public class BinPackingPorTabuSearch {
 		Integer i = 0; // indice das iterações
 		Integer M = 0; // indice da iteração da melhor solução
 		while ((i - M) < NMAX) {
-			SolucaoBPTS primeiroVizinho = solucaoAtual.getCopiaDaSolucao();
-			fazerPerturbacao(primeiroVizinho);
-			SolucaoBPTS melhorVizinho = primeiroVizinho;
+			Boolean primeiroVizinhoNaoTabuRegistrado = false;
+			fazerPerturbacao(solucaoAtual);
+			SolucaoBPTS melhorVizinho = solucaoAtual.getCopiaDaSolucao();
+			desfazerPertubacao(solucaoAtual);
+
 			for (int j = 1; j < NV; j++) {
-				SolucaoBPTS vizinhoAtual = solucaoAtual.getCopiaDaSolucao();
-				fazerPerturbacao(vizinhoAtual);
-				if (!filaTabu.contem(vizinhoAtual) && vizinhoAtual.getQtdBins() < melhorVizinho.getQtdBins()) {
-					melhorVizinho = vizinhoAtual;
+				fazerPerturbacao(solucaoAtual);
+				SolucaoBPTS vizinhoAtual = solucaoAtual;
+				if (!primeiroVizinhoNaoTabuRegistrado) {
+					if (!filaTabu.contem(vizinhoAtual)) {
+						melhorVizinho = vizinhoAtual.getCopiaDaSolucao();
+					}
+				} else {
+					if (!filaTabu.contem(vizinhoAtual) && vizinhoAtual.getQtdBins() < melhorVizinho.getQtdBins()) {
+						melhorVizinho = vizinhoAtual.getCopiaDaSolucao();
+					}
 				}
+				desfazerPertubacao(solucaoAtual);
 			}
-			solucaoAtual = melhorVizinho;
+			solucaoAtual = melhorVizinho.getCopiaDaSolucao();
 			filaTabu.adicionar(solucaoAtual);
 			if (melhorSolucao.getQtdBins() > melhorVizinho.getQtdBins()) {
 				System.out.println("Achou uma solução melhor! i = " + i + ". Num. de Bins: " + melhorVizinho.getQtdBins());
-				melhorSolucao = melhorVizinho;
+				melhorSolucao = melhorVizinho.getCopiaDaSolucao();
 				M = i;
 			} else {
 				System.out.println("i = " + i);
@@ -135,27 +150,76 @@ public class BinPackingPorTabuSearch {
 		}
 	}
 
-	public void fazerPerturbacao(SolucaoBPTS vizinhoAtual) {
+	public void fazerPerturbacao(SolucaoBPTS solucao) {
+
+		perturbacaoRemoveuBinDeOrigem = false;
 		Random gerador = new Random();
 
-		Integer indiceBinOrigem = gerador.nextInt(vizinhoAtual.getQtdBins());
-		while (vizinhoAtual.getBin(indiceBinOrigem).getQtdObjetos() == 0) {
-			indiceBinOrigem = gerador.nextInt(vizinhoAtual.getQtdBins());
+		indiceBinOrigem = gerador.nextInt(solucao.getQtdBins());
+		while (solucao.getBin(indiceBinOrigem).getQtdObjetos() == 0) {
+			indiceBinOrigem = gerador.nextInt(solucao.getQtdBins());
 		}
 
-		Integer indiceObjetoASerTransferido = gerador.nextInt(vizinhoAtual.getBin(indiceBinOrigem).getQtdObjetos());
-		Objeto objetoPerturbacao = vizinhoAtual.getBin(indiceBinOrigem).removerObjeto(indiceObjetoASerTransferido);
-		if (vizinhoAtual.getBin(indiceBinOrigem).getQtdObjetos() == 0) {
-			Bin binVazio = vizinhoAtual.getBin(indiceBinOrigem);
-			vizinhoAtual.removeBin(binVazio);
+		indiceObjetoASerTransferido = gerador.nextInt(solucao.getBin(indiceBinOrigem).getQtdObjetos());
+		objetoPerturbacao = solucao.getBin(indiceBinOrigem).removerObjeto(indiceObjetoASerTransferido);
+		if (solucao.getBin(indiceBinOrigem).getQtdObjetos() == 0) {
+			Bin binVazio = solucao.getBin(indiceBinOrigem);
+			idBinRemovidoNaPertubacao = binVazio.getId();
+			solucao.removeBin(binVazio);
+			perturbacaoRemoveuBinDeOrigem = true;
 		}
 
-		Integer indiceBinDestino = gerador.nextInt(vizinhoAtual.getQtdBins());
-		Boolean coubeNoDestino = vizinhoAtual.getBin(indiceBinDestino).adicionarObjeto(objetoPerturbacao);
+		indiceBinDestino = gerador.nextInt(solucao.getQtdBins());
+		coubeNoDestino = solucao.getBin(indiceBinDestino).adicionarObjeto(objetoPerturbacao);
 		if (!coubeNoDestino) {
-			vizinhoAtual.adicionarObjetoEmNovoBin(objetoPerturbacao);
+			solucao.adicionarObjetoEmNovoBin(objetoPerturbacao);
+		}
+	}
+
+	public void desfazerPertubacao(SolucaoBPTS solucao) {
+		if (coubeNoDestino) {
+			solucao.getBin(indiceBinDestino).removerObjeto(solucao.getBin(indiceBinDestino).getQtdObjetos() - 1);
+			if (solucao.getBin(indiceBinDestino).getQtdObjetos() == 0) {
+				Bin binVazio = solucao.getBin(indiceBinDestino);
+				solucao.removeBin(binVazio);
+			}
+		} else {
+			solucao.getBin(solucao.getQtdBins() - 1)
+					.removerObjeto(solucao.getBin(solucao.getQtdBins() - 1).getQtdObjetos() - 1);
+			if (solucao.getBin(solucao.getQtdBins() - 1).getQtdObjetos() == 0) {
+				Bin binVazio = solucao.getBin(solucao.getQtdBins() - 1);
+				solucao.removeBin(binVazio);
+			}
 		}
 
+		if (perturbacaoRemoveuBinDeOrigem) {
+			Bin binDeOrigem = new Bin(idBinRemovidoNaPertubacao, C);
+			int j = solucao.getQtdBins() + 1;
+			while (j >= indiceBinOrigem) {
+				if (j == indiceBinOrigem) {
+					solucao.setBinNaPosicao(binDeOrigem, j);
+				} else if (j == solucao.getQtdBins() + 1) {
+					solucao.adicionarBin(binDeOrigem);
+				} else {
+					solucao.setBinNaPosicao(solucao.getBin(j - 1), (j));
+				}
+
+				j--;
+			}
+		}
+
+		int i = solucao.getBin(indiceBinOrigem).getQtdObjetos() + 1;
+		while (i >= indiceObjetoASerTransferido) {
+			if (i == indiceObjetoASerTransferido) {
+				solucao.getBin(indiceBinOrigem).setObjetoNaPosicao(objetoPerturbacao, i);
+			} else if (i == solucao.getBin(indiceBinOrigem).getQtdObjetos() + 1) {
+				solucao.getBin(indiceBinOrigem).adicionarObjeto(objetoPerturbacao);
+			} else {
+				solucao.getBin(indiceBinOrigem).setObjetoNaPosicao(solucao.getBin(indiceBinOrigem).getObjeto(i - 1),
+						(i));
+			}
+			i--;
+		}
 	}
 
 	private void imprimeSaida() {
