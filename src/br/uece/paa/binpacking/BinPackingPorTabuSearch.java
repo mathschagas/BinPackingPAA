@@ -102,17 +102,17 @@ public class BinPackingPorTabuSearch {
 		solucaoInicial = new SolucaoBPTS(nomeInstancia, C);
 		for (int i = 0; i < pesos.size(); i++) {
 			Objeto objetoAtual = new Objeto(i + 1, pesos.get(i));
-			solucaoInicial.adicionarObjetoPorFirstFit(objetoAtual);
-			// solucaoInicial.adicionarObjetoEmNovoBin(objetoAtual);
+			// solucaoInicial.adicionarObjetoPorFirstFit(objetoAtual);
+			solucaoInicial.adicionarObjetoEmNovoBin(objetoAtual);
 		}
 	}
 
 	private void atribuirValoresParaExecucaoDaTabuSearch() {
-		NMAX = 2 * N; // N <= NMAX <= 3N.
+		NMAX = 3 * N; // N <= NMAX <= 3N.
 		T = 7; // T = 7 a 10 já resulta em soluções satisfatórias.
 		NV = N / 2; // Sugestão do livro, de acorod com o estudo de HERTZ, WERRA (1987)
 		filaTabu = new FilaTabu(T);
-		tempoMaximo = (long) 600000; // Tempo maximo para execução de instâncias de longa duração.
+		tempoMaximo = (long) 300000; // Tempo maximo para execução de instâncias de longa duração.
 	}
 
 	private void buscaTabu() {
@@ -154,7 +154,8 @@ public class BinPackingPorTabuSearch {
 				System.out.println("i = " + i + ". (Tempo = " + (timerMarcacaoTermino-timerMarcacaoInicio) + ")");
 			}
 			i++;
-			if (tempoDeTermino-tempoDeInicio > tempoMaximo) {
+			if (timerMarcacaoTermino-tempoDeInicio > tempoMaximo) {
+				System.out.println("Execução excedeu o tempo limite.\nO programa foi interrompido e o melhor resultado conquistado até o momento será apresentado");
 				break;
 			}
 		}
